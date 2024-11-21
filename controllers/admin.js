@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 
 const {Admin,Course,Purchase,User} = require("../models/users");
 // const { admin } = require("../models/admin");
-const admincheck = require("../middelware/admincheck");
+const {admincheck,blacklistCheck} = require("../middelware/admincheck");
 
 const adminRouter = express.Router();
 
@@ -65,7 +65,8 @@ adminRouter.post("/admin/signin",async(req,res)=>{
     const admintoken = jwt.sign(
         {id:emailexist._id},process.env.JWT_SECRET_KEY
     );
-    res.json({admintoken,Admin:{...Admin.doc}});
+    res.json({admintoken,Admin:emailexist});
+        // ...Admin.doc}});
     console.log(admintoken);
     }
     catch(e){
@@ -160,6 +161,25 @@ adminRouter.get("/admin/allcourses",admincheck, async(req,res)=>{
         return res.status(500).send(e);
     }
 });
+
+const blacklistedTokens = new Set();
+
+adminRouter.get("/admin/logout",admincheck,blacklistCheck,async(req,res)=>{
+    try{
+        const token = req.headertoken;
+        if(!token){
+            return res.status(400).send("token missing");
+        }
+
+        blacklistedTokens.add(token);
+
+        res.status(200).json({ message:" Logged out successfully. Token invalidated."});
+    }
+    catch(e){
+        res.status(500).send(e);
+
+    }
+})
 
 module.exports ={
     adminRouter:adminRouter

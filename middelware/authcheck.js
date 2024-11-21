@@ -17,6 +17,14 @@ const authcheck = async(req,res,next)=>{
     catch(e){
         res.status(401).send("Please authenticate");
     }
+};
+const blacklistCheck = async(req,res,next)=>{
+       const token = req.headertoken;
+        if(blacklistedTokens.has(token)){
+            return res.status(401).send("Token is invalid or has been logged out ")
+        }
+        next();
+
 }
 
-module.exports = authcheck;
+module.exports = {authcheck,blacklistCheck};

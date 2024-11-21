@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const {User,Admin, Course, Purchase} = require('../models/users');
-const authcheck = require('../middelware/authcheck');
+const {authcheck,blacklistCheck} = require('../middelware/authcheck');
 const authRouter = express.Router();
 // const authcheck = require('../middleware/authcheck');
 
@@ -150,7 +150,25 @@ authRouter.post('/user/showpurchasedcourse',authcheck,async(req,res)=>{
         res.status(500).send(e);
     }
 });
+const blacklistedTokens  = new set();
 
+authRouter.get('/user/logout',authcheck,blacklistCheck ,async(req,res)=>{
+    try{
+        const token = req.headertoken;
+        if(!token){
+            return res.status(400).send("token missing");
+        }
+
+        blacklistedTokens.add(token);
+
+        res.status(200).json({ message:" Logged out successfully. Token invalidated."});
+    }
+    catch(e){
+        res.status(500).send(e);
+
+    }
+    // const token  = req.header;
+})
 
 
 module.exports = authRouter;

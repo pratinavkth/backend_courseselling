@@ -1,4 +1,7 @@
 const jwt = require('jsonwebtoken');
+
+const blacklistedTokens = new Set();
+
 const admincheck =async(req,res,next)=>{
     try{
         const headertoken = req.header('x-admin-token')
@@ -21,6 +24,14 @@ const admincheck =async(req,res,next)=>{
         res.status(401).send("Please authenticate");
     }
 
-}
+};
 
-module.exports = admincheck;
+const blacklistCheck = async (req,res,next)=>{
+    const token = req.headertoken;
+    if(blacklistedTokens.has(token)){
+        return res.status(401).send("Token is invalid or has been logged out ")
+    }
+    next();
+};
+
+module.exports ={ admincheck,blacklistCheck,blacklistedTokens};
